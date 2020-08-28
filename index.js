@@ -8,6 +8,7 @@ const shortid = require("shortid");
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: "postgres",
     protocol: "postgres",
+    logging: false,
     dialectOptions: {
       ssl: {
         require: true,
@@ -16,9 +17,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
     },
   });
 app.use(bodyParser.json());
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+
 const Links = sequelize.define("Links", {
   shorturl: {
     type: DataTypes.STRING,
@@ -34,6 +33,10 @@ const Links = sequelize.define("Links", {
     type: DataTypes.STRING,
     allowNull: true,
     unique: false,
+  },
+  clicks:{
+    type: DataTypes.INTEGER,
+    defaultValue:0,
   },
 });
 Links.sync();
@@ -62,7 +65,7 @@ app.post("/short", async (req, res) => {
     console.log(err);
   }
 });
-app.get("/d/:id", async (req, res) => {
+app.get("/:id", async (req, res) => {
   shorted = req.params.id || "sad";
   const lenk = await Links.findOne({
     where: {
@@ -72,9 +75,34 @@ app.get("/d/:id", async (req, res) => {
   if (lenk === null) {
     res.status(404).send("Not found");
   } else {
+    lenk.increment(["clicks"],{by:1})
     res.redirect(lenk.longurl);
+    
   }
 });
+app.get("/stats/:id", async (req, res) => {
+  shorted = req.params.id || "sad";
+  const lenk = await Links.findOne({
+    where: {
+      shorturl: shorted,
+    },
+  });
+  if (lenk === null) {
+    res.status(404).send("Not found");
+  } else {
+    var finaldata={
+      shorturl:lenk.shorturl,
+      longurl:lenk.longurl,
+      clicks:lenk.clicks
+    }
+    res.json(finaldata);
+    
+  }
+});
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
