@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const port = process.env.PORT ||3000;
 const { Sequelize, DataTypes } = require("sequelize");
+const { v4: uuidv4 } = require('uuid');
 const shortid = require("shortid");
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: "postgres",
@@ -40,7 +41,7 @@ Links.sync();
 app.post("/short", async (req, res) => {
   try {
     longurl = req.body.longurl;
-    user = req.body.user || "anonymous";
+    user = req.body.user || uuidv4();
     const lenk = await Links.findOne({
       where: {
         longurl: longurl,
