@@ -1,11 +1,13 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const port = process.env.PORT ||3000;
+const port = process.env.PORT || 3000;
 const { Sequelize, DataTypes } = require("sequelize");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const shortid = require("shortid");
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
+const sequelize = new Sequelize(
+  "postgres://dlhgplygbfnogk:1134117f2441251a16e10f6d0ee8e83e9f3c42e034267e42482647be43a08f3b@ec2-54-217-206-236.eu-west-1.compute.amazonaws.com:5432/d55inraka97f9b",
+  {
     dialect: "postgres",
     protocol: "postgres",
     logging: false,
@@ -15,7 +17,8 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
         rejectUnauthorized: false,
       },
     },
-  });
+  },
+);
 app.use(bodyParser.json());
 
 const Links = sequelize.define("Links", {
@@ -34,9 +37,9 @@ const Links = sequelize.define("Links", {
     allowNull: true,
     unique: false,
   },
-  clicks:{
+  clicks: {
     type: DataTypes.INTEGER,
-    defaultValue:0,
+    defaultValue: 0,
   },
 });
 Links.sync();
@@ -75,9 +78,8 @@ app.get("/:id", async (req, res) => {
   if (lenk === null) {
     res.status(404).send("Not found");
   } else {
-    lenk.increment(["clicks"],{by:1})
+    lenk.increment(["clicks"], { by: 1 });
     res.redirect(lenk.longurl);
-    
   }
 });
 app.get("/stats/:id", async (req, res) => {
@@ -90,17 +92,16 @@ app.get("/stats/:id", async (req, res) => {
   if (lenk === null) {
     res.status(404).send("Not found");
   } else {
-    var finaldata={
-      shorturl:lenk.shorturl,
-      longurl:lenk.longurl,
-      clicks:lenk.clicks
-    }
+    var finaldata = {
+      shorturl: lenk.shorturl,
+      longurl: lenk.longurl,
+      clicks: lenk.clicks,
+    };
     res.json(finaldata);
-    
   }
 });
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.sendFile(__dirname + "/public/index.html");
 });
 
 app.listen(port, () => {
