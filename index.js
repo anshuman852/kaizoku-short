@@ -1,21 +1,21 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const port = process.env.PORT ||3000;
+const port = process.env.PORT || 3000;
 const { Sequelize, DataTypes } = require("sequelize");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const shortid = require("shortid");
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: "postgres",
-    protocol: "postgres",
-    logging: false,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
+  dialect: "postgres",
+  protocol: "postgres",
+  logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
     },
-  });
+  },
+});
 app.use(bodyParser.json());
 
 const Links = sequelize.define("Links", {
@@ -34,9 +34,9 @@ const Links = sequelize.define("Links", {
     allowNull: true,
     unique: false,
   },
-  clicks:{
+  clicks: {
     type: DataTypes.INTEGER,
-    defaultValue:0,
+    defaultValue: 0,
   },
 });
 Links.sync();
@@ -75,9 +75,8 @@ app.get("/:id", async (req, res) => {
   if (lenk === null) {
     res.status(404).send("Not found");
   } else {
-    lenk.increment(["clicks"],{by:1})
+    lenk.increment(["clicks"], { by: 1 });
     res.redirect(lenk.longurl);
-    
   }
 });
 app.get("/stats/:id", async (req, res) => {
@@ -90,17 +89,16 @@ app.get("/stats/:id", async (req, res) => {
   if (lenk === null) {
     res.status(404).send("Not found");
   } else {
-    var finaldata={
-      shorturl:lenk.shorturl,
-      longurl:lenk.longurl,
-      clicks:lenk.clicks
-    }
+    var finaldata = {
+      shorturl: lenk.shorturl,
+      longurl: lenk.longurl,
+      clicks: lenk.clicks,
+    };
     res.json(finaldata);
-    
   }
 });
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.sendFile(__dirname + "/public/index.html");
 });
 
 app.listen(port, () => {
